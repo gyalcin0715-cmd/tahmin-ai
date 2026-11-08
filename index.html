@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#080914" />
+    <meta name="description" content="Bir görsel yükle, Teachable Machine modelin uzay ve kuantum izlerini keşfetsin." />
+    <title>Quantum Scan — Kozmik görsel laboratuvarı</title>
+    <link rel="icon" type="image/svg+xml" href="quantum-scan-mark.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+    <header class="topbar shell">
+      <a class="brand" href="#top" aria-label="Quantum Scan ana sayfa">
+        <img class="brand-icon" src="quantum-scan-mark.svg" alt="" />
+        <span class="brand-name">QUANTUM<span>SCAN</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Ana menü">
+        <a href="#scanner">Laboratuvar</a>
+        <a href="#atlas">Keşif atlası</a>
+      </nav>
+      <div class="model-status" id="modelStatus" data-state="loading" role="status" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="modelStatusText">Model hazırlanıyor</span>
+        <button class="text-button hidden" id="retryModelButton" type="button">Yeniden dene</button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero shell" aria-labelledby="heroTitle">
+        <img class="hero-image" src="assets/nasa-carina-nebula.webp" alt="NASA, ESA ve CSA Webb teleskobunun Carina Nebulası Cosmic Cliffs gözlemi" fetchpriority="high" />
+        <div class="hero-image-shade" aria-hidden="true"></div>
+        <div class="hero-content">
+          <div class="eyebrow"><span class="eyebrow-orb"></span> KOZMİK GÖRSEL LABORATUVARI <span class="eyebrow-rule"></span> 01 / 03</div>
+          <h1 id="heroTitle">Evreni<br /><span>bir karede</span><br />keşfet.</h1>
+          <p class="hero-description">Galaksiler, kuantum izleri ve yapay zekânın düşlediği uzaylar. Görselini tara, kendi modelinin gördüklerini keşfet.</p>
+          <a class="hero-cta" href="#scanner"><span>Tarayıcıya geç</span><span class="cta-arrow" aria-hidden="true">↘</span></a>
+          <div class="hero-proof"><span class="proof-spark" aria-hidden="true">✦</span> GERÇEK NASA/ESA GÖZLEMİ · KİŞİSEL MODELİNLE TARA</div>
+        </div>
+        <div class="hero-orbit-card" aria-hidden="true">
+          <div class="orbit-card-orbit orbit-card-orbit-one"></div><div class="orbit-card-orbit orbit-card-orbit-two"></div>
+          <span class="orbit-card-node node-a"></span><span class="orbit-card-node node-b"></span>
+          <div class="orbit-card-core"><span>Q</span></div>
+          <div class="orbit-card-label"><span>QUANTUM CORE</span><strong>SEKTÖR 07 <i></i></strong></div>
+          <span class="hero-corner-note">SIGNAL · ONLINE</span>
+        </div>
+        <div class="hero-bottomline"><span>JAMES WEBB SPACE TELESCOPE · CARINA NEBULA</span><a class="hero-credit" href="https://science.nasa.gov/asset/webb/cosmic-cliffs-in-the-carina-nebula-nircam-image/" target="_blank" rel="noopener noreferrer">GÖRSEL KREDİSİ: NASA · ESA · CSA · STScI ↗</a></div>
+      </section>
+
+      <section class="scanner shell" id="scanner" aria-labelledby="scannerTitle">
+        <div class="section-heading">
+          <div class="section-heading-copy">
+            <div class="eyebrow"><span class="eyebrow-orb"></span> GÖRSEL ANALİZİ <span class="eyebrow-rule"></span> 02 / 03</div>
+            <h2 id="scannerTitle">Sinyalini <span>gönder.</span></h2>
+          </div>
+          <p class="section-caption">Modelin görselindeki en güçlü izi bulsun.<br />Sonucu saniyeler içinde gör.</p>
+        </div>
+
+        <div class="workspace">
+          <div class="upload-column glass-panel">
+            <div class="panel-label"><span><i>01</i> GÖRSEL GİRİŞİ</span><span class="panel-label-status"><b></b> CİHAZINDA</span></div>
+            <input class="visually-hidden" id="imageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+            <label class="dropzone" id="dropzone" for="imageInput" tabindex="0" role="button" aria-describedby="uploadHint">
+              <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v3A2.5 2.5 0 0 0 7.5 20h9a2.5 2.5 0 0 0 2.5-2.5v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="dropzone-title">Görselini bırak</span>
+              <span class="dropzone-subtitle">veya <span class="browse-link">dosyalarına göz at</span></span>
+              <span class="file-hint" id="uploadHint">JPG, PNG, WEBP · EN FAZLA 12 MB</span>
+              <span class="dropzone-corner corner-tl"></span><span class="dropzone-corner corner-br"></span>
+            </label>
+            <div class="preview hidden" id="previewPanel">
+              <div class="preview-frame"><img id="previewImage" alt="Analiz için seçilen görselin önizlemesi" /><span class="preview-tag">GÖRSEL HAZIR</span></div>
+              <div class="file-meta"><span class="file-name" id="fileName"></span><button class="remove-button" id="removeButton" type="button" aria-label="Seçili görseli kaldır">Resmi kaldır <span aria-hidden="true">×</span></button></div>
+            </div>
+            <p class="upload-error hidden" id="uploadError" role="alert"></p>
+            <button class="analyze-button" id="analyzeButton" type="button" disabled><span class="button-label">Önce görsel seç</span><span class="button-arrow" aria-hidden="true">↗</span></button>
+            <p class="privacy-note"><span aria-hidden="true">◈</span> GÖRSELİN YÜKLENMEZ · ANALİZ CİHAZINDA GERÇEKLEŞİR</p>
+          </div>
+
+          <aside class="result-column glass-panel" aria-live="polite" aria-atomic="true">
+            <div class="panel-label"><span><i>02</i> ANALİZ ÇIKTISI</span><span class="output-tag">MODEL / QS-01</span></div>
+            <div class="result-placeholder" id="resultPlaceholder">
+              <div class="result-visual" aria-hidden="true"><div class="result-visual-ring ring-a"></div><div class="result-visual-ring ring-b"></div><div class="result-visual-spark">✳</div><span class="visual-star star-a">✦</span><span class="visual-star star-b">·</span></div>
+              <p class="result-kicker">SİNYAL BEKLENİYOR</p>
+              <h3>Bir keşif<br />yaklaşıyor.</h3>
+              <p>Görselini yüklediğinde modelinin en güçlü tahmini burada belirecek.</p>
+              <div class="result-placeholder-footer"><span></span> HAZIR <i>TO SCAN</i></div>
+            </div>
+            <div class="result-card hidden" id="resultCard">
+              <div class="result-topline"><span class="result-kicker">MODELİNİN TAHMİNİ</span><span class="result-stamp">TARAMA TAMAMLANDI</span></div>
+              <div class="result-visual result-visual-small" aria-hidden="true"><div class="result-visual-ring ring-a"></div><div class="result-visual-ring ring-b"></div><div class="result-visual-spark">✳</div></div>
+              <p class="result-label">EN GÜÇLÜ EŞLEŞME</p>
+              <h3 class="prediction-name" id="predictionName">—</h3>
+              <div class="confidence-row"><span>MODEL GÜVENİ</span><strong id="confidenceValue">—%</strong></div>
+              <div class="confidence-track" aria-label="Model güven düzeyi"><span id="confidenceBar"></span></div>
+              <p class="result-disclaimer">Bu değer model tahmin olasılığıdır; kesinlik garantisi değildir.</p>
+              <div class="scores-heading"><span>TÜM SINIFLAR</span><span>OLASILIK DAĞILIMI</span></div>
+              <div class="other-predictions hidden" id="otherPredictions" role="list" aria-label="Tüm sınıfların tahmin yüzdeleri"></div>
+            </div>
+            <div class="scanning-state hidden" id="scanningState" role="status"><span class="scan-spinner" aria-hidden="true"></span><span>Görselin sinyali çözümleniyor<span class="loading-dots">...</span></span></div>
+            <div class="analysis-error hidden" id="analysisError" role="alert"></div>
+            <div class="result-axis" aria-hidden="true"><span>CONFIDENCE</span><span>0 <i></i> 100</span></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="atlas shell" id="atlas" aria-labelledby="atlasTitle">
+        <div class="atlas-heading">
+          <div><div class="eyebrow"><span class="eyebrow-orb"></span> MODELİNİN EVRENİ <span class="eyebrow-rule"></span> 03 / 03</div><h2 id="atlasTitle">Üç ayrı <span>bilinmeyen.</span></h2></div>
+          <p>Yapay zekâ ile üretilmiş görsel yok. Bunlar NASA, ESA ve Webb teleskoplarının gerçek gözlem kareleri.</p>
+        </div>
+        <div class="atlas-grid">
+          <article class="atlas-card atlas-card-galaxy">
+            <img src="assets/nasa-webb-deep-field.webp" alt="James Webb'in SMACS 0723 derin alan görüntüsündeki binlerce uzak galaksi" loading="lazy" />
+            <div class="atlas-card-overlay"></div><span class="atlas-index">01 / WEBB DEEP FIELD</span><div class="atlas-card-caption"><span>Gerçek teleskop gözlemi · NIRCam</span><h3>Evrenin derinlikleri</h3><a class="atlas-source" href="https://science.nasa.gov/asset/webb/webbs-first-deep-field-nircam-image/" target="_blank" rel="noopener noreferrer">NASA · ESA · CSA · STScI ↗</a></div>
+          </article>
+          <article class="atlas-card atlas-card-quantum">
+            <img src="assets/nasa-pillars-of-creation.webp" alt="James Webb NIRCam ile görüntülenen Yaratılış Sütunları yıldız oluşum bölgesi" loading="lazy" />
+            <div class="atlas-card-overlay"></div><span class="atlas-index">02 / PILLARS OF CREATION</span><div class="atlas-card-caption"><span>Gerçek teleskop gözlemi · NIRCam</span><h3>Yaratılış Sütunları</h3><a class="atlas-source" href="https://science.nasa.gov/asset/webb/pillars-of-creation-nircam-image/" target="_blank" rel="noopener noreferrer">NASA · ESA · CSA · STScI ↗</a></div>
+          </article>
+          <article class="atlas-card atlas-card-ai">
+            <img src="assets/esa-stephans-quintet.webp" alt="Webb teleskobuyla görülen Stephan's Quintet adlı beş galaksilik grup" loading="lazy" />
+            <div class="atlas-card-overlay"></div><span class="atlas-index">03 / STEPHAN'S QUINTET</span><div class="atlas-card-caption"><span>Gerçek teleskop gözlemi · NIRCam + MIRI</span><h3>Galaksilerin dansı</h3><a class="atlas-source" href="https://esawebb.org/images/weic2208a/" target="_blank" rel="noopener noreferrer">NASA · ESA · CSA · STScI ↗</a></div>
+          </article>
+        </div>
+      </section>
+
+      <footer class="page-footer shell"><a class="footer-brand" href="#top">Q<span>·</span>S</a><span>QUANTUM SCAN <i>✦</i> PERSONAL MODEL LAB</span><span>MERAK ET. YÜKLE. KEŞFET.</span></footer>
+    </main>
+  </body>
+</html>
